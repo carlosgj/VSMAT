@@ -2,93 +2,103 @@ import logging
 import numpy as np
 import sympy
 
-MICRONS_TO_INCH = 3.93701e-5
-FEET_TO_INCH = 12
-MILES_TO_INCH = 5280 * FEET_TO_INCH
-METER_TO_INCH = 39.3701
-KILOMETER_TO_INCH = METER_TO_INCH * 1000
-NANOMETER_TO_INCH = METER_TO_INCH * 1e-9
+class VSMATEngine(object):
+    def __init__(self):
+        self.initParams()
+        self.initEqns()
 
-params = []
+    def initParams(self):
+        self.params = []
 
-f = sympy.Symbol('f') #Focal ratio
-params.append(f)
+        self.f = sympy.Symbol('f') #Focal ratio
+        self.params.append(self.f)
 
-F = sympy.Symbol('F') #Focal length (in)
-params.append(F)
+        self.F = sympy.Symbol('F') #Focal length (in)
+        self.params.append(self.F)
 
-D = sympy.Symbol('D') #Primary diameter (in)
-params.append(D)
+        self.D = sympy.Symbol('D') #Primary diameter (in)
+        self.params.append(self.D)
 
-A = sympy.Symbol('A') #Altitude (in)
-params.append(A)
+        self.A = sympy.Symbol('A') #Altitude (in)
+        self.params.append(self.A)
 
-g = sympy.Symbol('g') #GSD (in)
-params.append(g)
+        self.g = sympy.Symbol('g') #GSD (in)
+        self.params.append(self.g)
 
-p = sympy.Symbol('p') #Pixel pitch (in)
-params.append(p)
+        self.p = sympy.Symbol('p') #Pixel pitch (in)
+        self.params.append(self.p)
 
-Px = sympy.Symbol('Px') #X pixel count
-params.append(Px)
+        self.Px = sympy.Symbol('Px') #X pixel count
+        self.params.append(self.Px)
 
-Py = sympy.Symbol('Py') #Y pixel count
-params.append(Py)
+        self.Py = sympy.Symbol('Py') #Y pixel count
+        self.params.append(self.Py)
 
-Sx = sympy.Symbol('Sx') #X sensor size (in)
-params.append(Sx)
+        self.Sx = sympy.Symbol('Sx') #X sensor size (in)
+        self.params.append(self.Sx)
 
-Sy = sympy.Symbol('Sy') #Y sensor size (in)
-params.append(Sy)
+        self.Sy = sympy.Symbol('Sy') #Y sensor size (in)
+        self.params.append(self.Sy)
 
-theta_d = sympy.Symbol('theta_d') #Diffraction limited angle
-params.append(theta_d)
+        self.theta_d = sympy.Symbol('theta_d') #Diffraction limited angle
+        self.params.append(self.theta_d)
 
-d = sympy.Symbol('d') #Diffraction limited spot
-params.append(d)
+        self.d = sympy.Symbol('d') #Diffraction limited spot size
+        self.params.append(self.d)
 
-Q = sympy.Symbol('Q') #Sampling ratio
-params.append(Q)
+        self.Q = sympy.Symbol('Q') #Sampling ratio
+        self.params.append(self.Q)
 
-Wx = sympy.Symbol('Wx') #X swath width (in)
-params.append(Wx)
+        self.Wx = sympy.Symbol('Wx') #X swath width (in)
+        self.params.append(self.Wx)
 
-Wy = sympy.Symbol('Wy') #Y swath width (in)
-params.append(Wy)
+        self.Wy = sympy.Symbol('Wy') #Y swath width (in)
+        self.params.append(self.Wy)
 
-wl = sympy.Symbol('wl') #Wavelength (in)
-params.append(wl)
+        self.wl = sympy.Symbol('wl') #Wavelength (in)
+        self.params.append(self.wl)
 
-alpha_x = sympy.Symbol('alpha_x') #Angular X FoV (rad)
-params.append(alpha_x)
+        self.alpha_x = sympy.Symbol('alpha_x') #Angular X FoV (rad)
+        self.params.append(self.alpha_x)
 
-alpha_y = sympy.Symbol('alpha_y') #Angular Y FoV (rad) 
-params.append(alpha_y)
+        self.alpha_y = sympy.Symbol('alpha_y') #Angular Y FoV (rad) 
+        self.params.append(self.alpha_y)
 
-eqns = []
 
-#Optics
-eqns.append( sympy.Eq(f, F/D) )
-eqns.append( sympy.Eq(alpha_x, Sx/F) )
-eqns.append( sympy.Eq(alpha_y, Sy/F) )
-eqns.append( sympy.Eq(Wx, A/(F/Sx)) )
-eqns.append( sympy.Eq(Wy, A/(F/Sy)) )
-eqns.append( sympy.Eq(g, A/(F/p)) )
-eqns.append( sympy.Eq(theta_d, 1.22 * wl / D) )
-eqns.append( sympy.Eq(d, theta_d * A) )
+    def initEqns(self):
+        self.eqns = []
+        #Optics
+        self.eqns.append( sympy.Eq(self.f, self.F/self.D) )
+        self.eqns.append( sympy.Eq(self.alpha_x, self.Sx/self.F) )
+        self.eqns.append( sympy.Eq(self.alpha_y, self.Sy/self.F) )
+        self.eqns.append( sympy.Eq(self.Wx, self.A/(self.F/self.Sx)) )
+        self.eqns.append( sympy.Eq(self.Wy, self.A/(self.F/self.Sy)) )
+        self.eqns.append( sympy.Eq(self.g, self.A/(self.F/self.p)) )
+        self.eqns.append( sympy.Eq(self.theta_d, 1.22 * self.wl / self.D) )
+        self.eqns.append( sympy.Eq(self.d, self.theta_d * self.A) )
 
-#Sensor
-eqns.append( sympy.Eq(Sx, p*Px) )
-eqns.append( sympy.Eq(Sy, p*Py) )
+        #Sensor
+        self.eqns.append( sympy.Eq(self.Sx, self.p*self.Px) )
+        self.eqns.append( sympy.Eq(self.Sy, self.p*self.Py) )
+        self.eqns.append( sympy.Eq(self.Q, self.d/self.g) )
 
-#Knowns
-eqns.append( sympy.Eq(D, 10 * FEET_TO_INCH) )
-eqns.append( sympy.Eq(F, 10 * METER_TO_INCH) )
-eqns.append( sympy.Eq(p, 3.75*MICRONS_TO_INCH) )
-eqns.append( sympy.Eq(Px, 10000) )
-eqns.append( sympy.Eq(A, 600 * KILOMETER_TO_INCH) )
-eqns.append( sympy.Eq(wl, 500 * NANOMETER_TO_INCH) )
+    def solve(self):
+        soln = sympy.solve(self.eqns, self.params, dict=True, manual=True)
+        if len(soln) < 1:
+            return None
+        else:
+            return soln[0]
 
-foo = sympy.solve(eqns, params, dict=True)
+if __name__ == "__main__":
+    this = VSMATEngine()
 
-print(foo)
+    #Knowns
+    this.eqns.append( sympy.Eq(this.D, 100) )
+    this.eqns.append( sympy.Eq(this.F, 200) )
+    this.eqns.append( sympy.Eq(this.p, 3.75) )
+    #this.eqns.append( sympy.Eq(this.wl, 2e-5) )
+    #this.eqns.append( sympy.Eq(this.Px, 10000) )
+    #this.eqns.append( sympy.Eq(this.A, 600 * 1000 * 40.) )
+
+    this.solve()
+
